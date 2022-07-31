@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "BinaryImageClassifier (win)",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/tmp/bin/win-vscode/BinaryImageClassifier/Debug/net6.0/BinaryImageClassifier.exe",
+            "args": [],
+            "cwd": "${workspaceFolder}/demo",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        }
+    ]
+}
