@@ -3,6 +3,7 @@ tmp/
 pub/
 patch.txt
 demo/*/storage/
+demo/lock
 
 # Environment
 .env
