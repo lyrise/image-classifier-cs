@@ -54,8 +54,11 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         var sourcePath = this.SourcePath.Value;
         if (!Directory.Exists(sourcePath)) return;
 
+        var tempList = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories).Take(5000).ToList();
+        tempList.Sort();
+
         _loadedFilePathStack.Clear();
-        foreach (var path in Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories).Take(10000))
+        foreach (var path in tempList)
         {
             _loadedFilePathStack.Push(path);
         }
@@ -99,31 +102,59 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         if (!Directory.Exists(dirPath)) return;
 
         var sourceFilePath = _currentFilePath;
-        var destinationFilePath = Path.Combine(dirPath, Path.GetFileName(_currentFilePath));
+        var destinationFilePath = GenUniqueDestinationFilePath(dirPath, Path.GetFileName(_currentFilePath));
 
         var history = new MovedFileHistory(sourceFilePath, destinationFilePath);
         _movedFileHistoryStack.Push(history);
         File.Move(history.SourceFilePath, history.DestinationFilePath);
     }
 
-    private void Next()
+    private string GenUniqueDestinationFilePath(string dirPath, string fileName)
     {
-        if (_loadedFilePathStack.Count == 0)
+        string filePath = Path.Combine(dirPath, fileName);
+        if (!File.Exists(filePath)) return filePath;
+
+        for (int i = 0; i < 1024; i++)
         {
-            var imageSource = this.ImageSource.Value;
-            this.ImageSource.Value = null;
-            imageSource?.Dispose();
-
-            _currentFilePath = null;
-
-            return;
+            filePath = Path.Combine(dirPath, Path.GetFileNameWithoutExtension(fileName) + $"_{i}" + Path.GetExtension(fileName));
+            if (!File.Exists(filePath)) return filePath;
         }
 
-        var nextFilePath = _loadedFilePathStack.Pop();
+        throw new NotSupportedException();
+    }
 
-        using var fileStream = File.Open(nextFilePath, FileMode.Open);
+    private void Next()
+    {
+        string? nextFilePath = null;
+        Bitmap? newImageSource = null;
+
+        for (; ; )
+        {
+            if (_loadedFilePathStack.Count == 0)
+            {
+                var imageSource = this.ImageSource.Value;
+                this.ImageSource.Value = null;
+                imageSource?.Dispose();
+
+                _currentFilePath = null;
+
+                return;
+            }
+
+            try
+            {
+                nextFilePath = _loadedFilePathStack.Pop();
+                using var fileStream = File.Open(nextFilePath, FileMode.Open);
+                newImageSource = new Bitmap(fileStream);
+                break;
+            }
+            catch (Exception)
+            {
+
+            }
+        }
+
         var oldImageSource = this.ImageSource.Value;
-        var newImageSource = new Bitmap(fileStream);
         this.ImageSource.Value = newImageSource;
         oldImageSource?.Dispose();
 
