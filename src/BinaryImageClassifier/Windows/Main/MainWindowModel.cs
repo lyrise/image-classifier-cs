@@ -54,8 +54,8 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         var sourcePath = this.SourcePath.Value;
         if (!Directory.Exists(sourcePath)) return;
 
-        var tempList = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories).Take(5000).ToList();
-        tempList.Sort();
+        var tempList = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories).Take(10000).ToList();
+        tempList.Sort((x, y) => y.CompareTo(x));
 
         _loadedFilePathStack.Clear();
         foreach (var path in tempList)

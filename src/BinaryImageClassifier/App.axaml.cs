@@ -20,6 +20,7 @@ public class App : Application
         if (!this.IsDesignMode)
         {
             AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler((_, e) => _logger.Error(e));
+            this.ApplicationLifetime!.Exit += (_, _) => this.Exit();
         }
 
         AvaloniaXamlLoader.Load(this);
@@ -101,5 +102,15 @@ public class App : Application
         var rootLoggingRule = NLog.LogManager.Configuration.LoggingRules.First(n => n.NameMatches("*"));
         rootLoggingRule.EnableLoggingForLevels(minLevel, NLog.LogLevel.Fatal);
         NLog.LogManager.ReconfigExistingLoggers();
+    }
+
+    private async void Exit()
+    {
+        await Bootstrapper.Instance.DisposeAsync();
+
+        _logger.Info("Stopping...");
+        NLog.LogManager.Shutdown();
+
+        _lockFileStream?.Dispose();
     }
 }

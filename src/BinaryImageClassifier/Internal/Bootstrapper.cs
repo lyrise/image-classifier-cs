@@ -41,14 +41,12 @@ public partial class Bootstrapper : IAsyncDisposable
         }
     }
 
-    protected async ValueTask OnDisposeAsync()
-    {
-    }
-
     public ServiceProvider GetServiceProvider()
     {
         return _serviceProvider ?? throw new NullReferenceException();
     }
 
-    public ValueTask DisposeAsync() => throw new NotImplementedException();
+    public async ValueTask DisposeAsync()
+    {
+    }
 }
