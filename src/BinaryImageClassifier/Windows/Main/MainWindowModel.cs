@@ -54,7 +54,8 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         var sourcePath = this.SourcePath.Value;
         if (!Directory.Exists(sourcePath)) return;
 
-        var tempList = Directory.EnumerateFiles(sourcePath, "*", SearchOption.AllDirectories).Take(10000).ToList();
+        var extSet = new HashSet<string>() { ".png", ".jpg", ".jpeg" };
+        var tempList = GetFiles(sourcePath).Where(n => extSet.Contains(Path.GetExtension(n).ToLower())).Take(10000).ToList();
         tempList.Sort((x, y) => y.CompareTo(x));
 
         _loadedFilePathStack.Clear();
@@ -64,6 +65,28 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         }
 
         this.Next();
+    }
+
+    private static IEnumerable<string> GetFiles(string sourcePath)
+    {
+        if (!Directory.Exists(sourcePath)) yield break;
+
+        var files = Directory.GetFiles(sourcePath, "*", SearchOption.TopDirectoryOnly).ToList();
+        files.Sort();
+        foreach (var f in files)
+        {
+            yield return f;
+        }
+
+        var dirs = Directory.GetDirectories(sourcePath, "*", SearchOption.TopDirectoryOnly).ToList();
+        dirs.Sort();
+        foreach (var d in dirs)
+        {
+            foreach (var f in GetFiles(d))
+            {
+                yield return f;
+            }
+        }
     }
 
     private void Undo()
@@ -145,6 +168,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
             {
                 nextFilePath = _loadedFilePathStack.Pop();
                 using var fileStream = File.Open(nextFilePath, FileMode.Open);
+                if (fileStream.Length > 1024 * 1024) continue;
                 newImageSource = new Bitmap(fileStream);
                 break;
             }
