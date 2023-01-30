@@ -2,15 +2,21 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "BinaryImageClassifier (win)",
+            "name": "BinaryImageClassifier",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
-            "program": "${workspaceFolder}/tmp/bin/win-vscode/BinaryImageClassifier/Debug/net7.0/BinaryImageClassifier.exe",
             "args": [],
             "cwd": "${workspaceFolder}/demo",
             "console": "internalConsole",
-            "stopAtEntry": false
+            "stopAtEntry": false,
+            "windows": {
+                "program": "${workspaceFolder}/tmp/bin/win-vscode/BinaryImageClassifier/Debug/net7.0/BinaryImageClassifier.exe"
+            },
+            "linux": {
+                "program": "${workspaceFolder}/tmp/bin/linux-vscode/BinaryImageClassifier/Debug/net7.0/BinaryImageClassifier.dll",
+                "envFile": "${workspaceFolder}/.env"
+            }
         }
     ]
 }
