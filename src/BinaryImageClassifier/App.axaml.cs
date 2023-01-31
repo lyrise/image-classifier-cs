@@ -37,17 +37,7 @@ public class App : Application
 
     public new IClassicDesktopStyleApplicationLifetime? ApplicationLifetime => base.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime;
 
-    public MainWindow? MainWindow
-    {
-        get => this.ApplicationLifetime?.MainWindow as MainWindow;
-        set
-        {
-            if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifeTime)
-            {
-                lifeTime.MainWindow = value;
-            }
-        }
-    }
+    public MainWindow? MainWindow => this.ApplicationLifetime?.MainWindow as MainWindow;
 
     public bool IsDesignMode
     {
@@ -72,14 +62,17 @@ public class App : Application
             _logger.Info("Starting...");
             _logger.Info("AssemblyInformationalVersion: {0}", Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
 
-            this.MainWindow = new MainWindow();
+            var mainWindow = new MainWindow();
+
+            if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime lifetime)
+            {
+                lifetime.MainWindow = mainWindow;
+            }
 
             await Bootstrapper.Instance.BuildAsync();
 
             var serviceProvider = Bootstrapper.Instance.GetServiceProvider();
-            var viewModel = serviceProvider.GetRequiredService<MainWindowModel>();
-
-            this.MainWindow!.DataContext = viewModel;
+            mainWindow.DataContext = serviceProvider.GetRequiredService<MainWindowModel>();
         }
         catch (Exception e)
         {
@@ -91,7 +84,7 @@ public class App : Application
     {
         var target = (NLog.Targets.FileTarget)NLog.LogManager.Configuration.FindTargetByName("log_file");
         target.FileName = $"{Path.GetFullPath(logsDirectoryPath)}/${{date:format=yyyy-MM-dd}}.log";
-        target.ArchiveFileName = $"{Path.GetFullPath(logsDirectoryPath)}/logs/archive.{{#}}.log";
+        target.ArchiveFileName = $"{Path.GetFullPath(logsDirectoryPath)}/archives/{{#}}.log";
         NLog.LogManager.ReconfigExistingLoggers();
     }
 

@@ -37,6 +37,7 @@
     <PackageReference Include="NLog" />
     <PackageReference Include="ReactiveProperty" />
     <PackageReference Include="YamlDotNet" />
+    <PackageReference Include="System.Text.Json" />
   </ItemGroup>
 
   <ItemGroup>

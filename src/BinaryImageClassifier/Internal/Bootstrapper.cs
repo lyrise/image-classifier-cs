@@ -1,5 +1,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using BinaryImageClassifier.Windows.Main;
+using BinaryImageClassifier.Configuration;
 
 namespace BinaryImageClassifier.Internal;
 
@@ -11,7 +12,7 @@ public partial class Bootstrapper : IAsyncDisposable
 
     public static Bootstrapper Instance { get; } = new Bootstrapper();
 
-    private const string UI_STATUS_FILE_NAME = "ui_status.json";
+    private const string APP_CONFIG_FILE_NAME = "config.json";
 
     private Bootstrapper()
     {
@@ -21,8 +22,11 @@ public partial class Bootstrapper : IAsyncDisposable
     {
         try
         {
+            var config = await AppConfig.LoadAsync(Path.Combine(Directory.GetCurrentDirectory(), APP_CONFIG_FILE_NAME));
+
             var serviceCollection = new ServiceCollection();
 
+            serviceCollection.AddSingleton(config);
             serviceCollection.AddTransient<MainWindowModel>();
 
             _serviceProvider = serviceCollection.BuildServiceProvider();

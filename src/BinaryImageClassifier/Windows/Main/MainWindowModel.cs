@@ -1,5 +1,6 @@
 using System.Reactive.Disposables;
 using Avalonia.Media.Imaging;
+using BinaryImageClassifier.Configuration;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
@@ -25,11 +26,11 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
 
     private CompositeDisposable _disposable = new();
 
-    public MainWindowModel()
+    public MainWindowModel(AppConfig config)
     {
-        this.SourcePath = new ReactivePropertySlim<string>(string.Empty).AddTo(_disposable);
-        this.LeftPath = new ReactivePropertySlim<string>(string.Empty).AddTo(_disposable);
-        this.RightPath = new ReactivePropertySlim<string>(string.Empty).AddTo(_disposable);
+        this.SourcePath = new ReactivePropertySlim<string>(config.SourcePath ?? string.Empty).AddTo(_disposable);
+        this.LeftPath = new ReactivePropertySlim<string>(config.LeftPath ?? string.Empty).AddTo(_disposable);
+        this.RightPath = new ReactivePropertySlim<string>(config.RightPath ?? string.Empty).AddTo(_disposable);
         this.ImageSource = new ReactivePropertySlim<Bitmap?>().AddTo(_disposable);
         this.LoadCommand = new ReactiveCommand().AddTo(_disposable);
         this.LoadCommand.Subscribe(() => this.Load()).AddTo(_disposable);
