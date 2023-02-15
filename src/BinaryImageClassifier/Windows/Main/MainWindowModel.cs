@@ -169,7 +169,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
             {
                 nextFilePath = _loadedFilePathStack.Pop();
                 using var fileStream = File.Open(nextFilePath, FileMode.Open);
-                if (fileStream.Length > 1024 * 1024) continue;
+                if (fileStream.Length > 1024 * 1024 * 100) continue;
                 newImageSource = new Bitmap(fileStream);
                 break;
             }
