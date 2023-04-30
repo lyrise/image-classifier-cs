@@ -10,6 +10,7 @@ public sealed class AppConfig
     public string? SourcePath { get; set; }
     public string? LeftPath { get; set; }
     public string? RightPath { get; set; }
+    public string? DownPath { get; set; }
 
     public static async ValueTask<AppConfig> LoadAsync(string configPath)
     {

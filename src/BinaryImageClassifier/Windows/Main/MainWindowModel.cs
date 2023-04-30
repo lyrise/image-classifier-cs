@@ -16,6 +16,7 @@ public interface IMainWindowModel
     ReactiveCommand UndoCommand { get; }
     ReactiveCommand LeftCommand { get; }
     ReactiveCommand RightCommand { get; }
+    ReactiveCommand DownCommand { get; }
 }
 
 public class MainWindowModel : IAsyncDisposable, IMainWindowModel
@@ -31,6 +32,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         this.SourcePath = new ReactivePropertySlim<string>(config.SourcePath ?? string.Empty).AddTo(_disposable);
         this.LeftPath = new ReactivePropertySlim<string>(config.LeftPath ?? string.Empty).AddTo(_disposable);
         this.RightPath = new ReactivePropertySlim<string>(config.RightPath ?? string.Empty).AddTo(_disposable);
+        this.DownPath = new ReactivePropertySlim<string>(config.DownPath ?? string.Empty).AddTo(_disposable);
         this.ImageSource = new ReactivePropertySlim<Bitmap?>().AddTo(_disposable);
         this.LoadCommand = new ReactiveCommand().AddTo(_disposable);
         this.LoadCommand.Subscribe(() => this.Load()).AddTo(_disposable);
@@ -40,15 +42,19 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         this.RightCommand.Subscribe(() => this.Right()).AddTo(_disposable);
         this.LeftCommand = new ReactiveCommand().AddTo(_disposable);
         this.LeftCommand.Subscribe(() => this.Left()).AddTo(_disposable);
+        this.DownCommand = new ReactiveCommand().AddTo(_disposable);
+        this.DownCommand.Subscribe(() => this.Down()).AddTo(_disposable);
     }
     public ReactivePropertySlim<string> SourcePath { get; }
     public ReactivePropertySlim<string> LeftPath { get; }
     public ReactivePropertySlim<string> RightPath { get; }
+    public ReactivePropertySlim<string> DownPath { get; }
     public ReactivePropertySlim<Bitmap?> ImageSource { get; }
     public ReactiveCommand LoadCommand { get; }
     public ReactiveCommand UndoCommand { get; }
     public ReactiveCommand LeftCommand { get; }
     public ReactiveCommand RightCommand { get; }
+    public ReactiveCommand DownCommand { get; }
 
     private async void Load()
     {
@@ -117,6 +123,13 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
     {
         var leftPath = this.LeftPath.Value;
         this.Move(leftPath);
+        this.Next();
+    }
+
+    private void Down()
+    {
+        var downPath = this.DownPath.Value;
+        this.Move(downPath);
         this.Next();
     }
 

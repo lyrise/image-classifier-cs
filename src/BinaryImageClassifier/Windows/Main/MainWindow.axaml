@@ -28,6 +28,10 @@
                     <Label DockPanel.Dock="Left" MinWidth="60" Content="Left:" VerticalAlignment="Center" />
                     <TextBox Text="{Binding LeftPath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
                 </DockPanel>
+                <DockPanel>
+                    <Label DockPanel.Dock="Left" MinWidth="60" Content="Down:" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding DownPath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
+                </DockPanel>
             </StackPanel>
         </Grid>
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
@@ -37,6 +41,7 @@
                 <Button Content="Undo" Command="{Binding UndoCommand}" />
                 <Button Content="Right" Command="{Binding RightCommand}" />
                 <Button Content="Left" Command="{Binding LeftCommand}" />
+                <Button Content="Down" Command="{Binding DownCommand}" />
             </StackPanel>
         </Grid>
     </Grid>

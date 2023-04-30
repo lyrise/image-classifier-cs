@@ -28,17 +28,21 @@ public partial class MainWindow : Window
     {
         if (this.DataContext is IMainWindowModel windowModel)
         {
-            if (e.Key.HasFlag(Key.Right))
+            if (e.Key == Key.Up)
+            {
+                windowModel.UndoCommand.Execute();
+            }
+            else if (e.Key == Key.Right)
             {
                 windowModel.RightCommand.Execute();
             }
-            else if (e.Key.HasFlag(Key.Left))
+            else if (e.Key == Key.Left)
             {
                 windowModel.LeftCommand.Execute();
             }
-            else if (e.Key.HasFlag(Key.Up))
+            else if (e.Key == Key.Down)
             {
-                windowModel.UndoCommand.Execute();
+                windowModel.DownCommand.Execute();
             }
         }
     }
