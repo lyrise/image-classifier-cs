@@ -17,6 +17,7 @@ public interface IMainWindowModel
     ReactiveCommand LeftCommand { get; }
     ReactiveCommand RightCommand { get; }
     ReactiveCommand DownCommand { get; }
+    ReactivePropertySlim<string> ProgressText { get; }
 }
 
 public class MainWindowModel : IAsyncDisposable, IMainWindowModel
@@ -44,6 +45,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         this.LeftCommand.Subscribe(() => this.Left()).AddTo(_disposable);
         this.DownCommand = new ReactiveCommand().AddTo(_disposable);
         this.DownCommand.Subscribe(() => this.Down()).AddTo(_disposable);
+        this.ProgressText = new ReactivePropertySlim<string>().AddTo(_disposable);
     }
     public ReactivePropertySlim<string> SourcePath { get; }
     public ReactivePropertySlim<string> LeftPath { get; }
@@ -55,6 +57,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
     public ReactiveCommand LeftCommand { get; }
     public ReactiveCommand RightCommand { get; }
     public ReactiveCommand DownCommand { get; }
+    public ReactivePropertySlim<string> ProgressText { get; }
 
     private async void Load()
     {
@@ -162,6 +165,8 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
 
     private void Next()
     {
+        this.ProgressText.Value = string.Format($"{_movedFileHistoryStack.Count} / {_movedFileHistoryStack.Count + _loadedFilePathStack.Count}");
+
         string? nextFilePath = null;
         Bitmap? newImageSource = null;
 
