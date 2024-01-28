@@ -1,7 +1,9 @@
 <Project>
+
   <PropertyGroup>
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
+
   <ItemGroup>
     <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.31.2" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="6.0.0" />
