@@ -1,3 +1,3 @@
-# Binary Image Classifier
+# Image Classifier
 
 ![](/docs/demo.png)
