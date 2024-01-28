@@ -29,7 +29,6 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="FluentAvaloniaUI" />
     <PackageReference Include="CommandLineParser" />
-    <PackageReference Include="Deadpikle.AvaloniaProgressRing" />
     <PackageReference Include="Generator.Equals" />
     <PackageReference Include="GitInfo">
       <PrivateAssets>all</PrivateAssets>

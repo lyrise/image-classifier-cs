@@ -110,15 +110,6 @@
         "resolved": "2.9.1",
         "contentHash": "OE0sl1/sQ37bjVsPKKtwQlWDgqaxWgtme3xZz7JssWUzg5JpMIyHgCTY9MVMxOg48fJ1AgGT3tgdH5m/kQ5xhA=="
       },
-      "Deadpikle.AvaloniaProgressRing": {
-        "type": "Direct",
-        "requested": "[0.9.6, )",
-        "resolved": "0.9.6",
-        "contentHash": "D5cJQEFN/bd3gKSn/GCB+4Be8QDzMrTo7xysC6bdZWFhwyTosoW2ovCqOJdfYqfYIU1zJ5wZ4H8MPpBP61IA5g==",
-        "dependencies": {
-          "Avalonia": "0.10.12"
-        }
-      },
       "FluentAvaloniaUI": {
         "type": "Direct",
         "requested": "[2.0.4, )",
