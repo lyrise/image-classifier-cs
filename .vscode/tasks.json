@@ -14,7 +14,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/BinaryImageClassifier/BinaryImageClassifier.csproj",
+                "${workspaceFolder}/src/ImageClassifier/ImageClassifier.csproj",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary"
             ],

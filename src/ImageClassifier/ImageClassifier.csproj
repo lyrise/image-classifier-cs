@@ -19,21 +19,23 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Diagnostics" />
+    <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="Avalonia.Skia" />
     <PackageReference Include="Avalonia.Svg.Skia" />
     <PackageReference Include="Avalonia.Xaml.Behaviors" />
     <PackageReference Include="Avalonia.Xaml.Interactions" />
     <PackageReference Include="Avalonia.Xaml.Interactivity" />
     <PackageReference Include="Avalonia" />
+    <PackageReference Include="FluentAvaloniaUI" />
     <PackageReference Include="CommandLineParser" />
     <PackageReference Include="Deadpikle.AvaloniaProgressRing" />
     <PackageReference Include="Generator.Equals" />
-    <PackageReference Include="GitInfo" />
-    <PackageReference Include="Material.Avalonia" />
+    <PackageReference Include="GitInfo">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" />
-    <PackageReference Include="NLog.Config" />
     <PackageReference Include="NLog" />
     <PackageReference Include="ReactiveProperty" />
     <PackageReference Include="YamlDotNet" />

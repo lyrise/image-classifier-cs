@@ -4,10 +4,10 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Microsoft.Extensions.DependencyInjection;
-using BinaryImageClassifier.Internal;
-using BinaryImageClassifier.Windows.Main;
+using ImageClassifier.Internal;
+using ImageClassifier.Windows.Main;
 
-namespace BinaryImageClassifier;
+namespace ImageClassifier;
 
 public class App : Application
 {

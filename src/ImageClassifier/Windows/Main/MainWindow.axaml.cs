@@ -3,7 +3,7 @@ using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 
-namespace BinaryImageClassifier.Windows.Main;
+namespace ImageClassifier.Windows.Main;
 
 public partial class MainWindow : Window
 {
@@ -26,7 +26,7 @@ public partial class MainWindow : Window
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        if (this.DataContext is IMainWindowModel windowModel)
+        if (this.DataContext is MainWindowModelBase windowModel)
         {
             if (e.Key == Key.Up || e.Key == Key.K)
             {
@@ -39,10 +39,6 @@ public partial class MainWindow : Window
             else if (e.Key == Key.Left || e.Key == Key.H)
             {
                 windowModel.LeftCommand.Execute();
-            }
-            else if (e.Key == Key.Down || e.Key == Key.J)
-            {
-                windowModel.DownCommand.Execute();
             }
         }
     }

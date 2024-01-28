@@ -1,7 +1,7 @@
 using System.Text.Encodings.Web;
 using System.Text.Json;
 
-namespace BinaryImageClassifier.Configuration;
+namespace ImageClassifier.Configuration;
 
 public sealed class AppConfig
 {

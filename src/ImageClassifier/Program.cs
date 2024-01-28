@@ -1,6 +1,6 @@
 using Avalonia;
 
-namespace BinaryImageClassifier;
+namespace ImageClassifier;
 
 public static class Program
 {

@@ -1,26 +1,48 @@
 using System.Reactive.Disposables;
 using Avalonia.Media.Imaging;
-using BinaryImageClassifier.Configuration;
+using ImageClassifier.Configuration;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 
-namespace BinaryImageClassifier.Windows.Main;
+namespace ImageClassifier.Windows.Main;
 
-public interface IMainWindowModel
+public class MainWindowModelBase
 {
-    ReactivePropertySlim<string> SourcePath { get; }
-    ReactivePropertySlim<string> LeftPath { get; }
-    ReactivePropertySlim<string> RightPath { get; }
-    ReactivePropertySlim<Bitmap?> ImageSource { get; }
-    ReactiveCommand LoadCommand { get; }
-    ReactiveCommand UndoCommand { get; }
-    ReactiveCommand LeftCommand { get; }
-    ReactiveCommand RightCommand { get; }
-    ReactiveCommand DownCommand { get; }
-    ReactivePropertySlim<string> ProgressText { get; }
+    public required ReactivePropertySlim<string> SourcePath { get; init; }
+    public required ReactivePropertySlim<string> LeftPath { get; init; }
+    public required ReactivePropertySlim<string> RightPath { get; init; }
+    public required ReactivePropertySlim<Bitmap?> ImageSource { get; init; }
+    public required ReactiveCommand LoadCommand { get; init; }
+    public required ReactiveCommand UndoCommand { get; init; }
+    public required ReactiveCommand LeftCommand { get; init; }
+    public required ReactiveCommand RightCommand { get; init; }
+    public required ReactivePropertySlim<string> ProgressText { get; init; }
 }
 
-public class MainWindowModel : IAsyncDisposable, IMainWindowModel
+public class MainWindowDesignModel : MainWindowModelBase, IDisposable
+{
+    private CompositeDisposable _disposable = new();
+
+    public MainWindowDesignModel()
+    {
+        this.SourcePath = new ReactivePropertySlim<string>(@"C:\").AddTo(_disposable);
+        this.LeftPath = new ReactivePropertySlim<string>(@"D:\").AddTo(_disposable);
+        this.RightPath = new ReactivePropertySlim<string>(@"E:\").AddTo(_disposable);
+        this.ImageSource = new ReactivePropertySlim<Bitmap?>().AddTo(_disposable);
+        this.LoadCommand = new ReactiveCommand().AddTo(_disposable);
+        this.UndoCommand = new ReactiveCommand().AddTo(_disposable);
+        this.RightCommand = new ReactiveCommand().AddTo(_disposable);
+        this.LeftCommand = new ReactiveCommand().AddTo(_disposable);
+        this.ProgressText = new ReactivePropertySlim<string>().AddTo(_disposable);
+    }
+
+    public void Dispose()
+    {
+        _disposable.Dispose();
+    }
+}
+
+public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
 {
     private Stack<string> _loadedFilePathStack = new();
     private Stack<MovedFileHistory> _movedFileHistoryStack = new();
@@ -33,7 +55,6 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         this.SourcePath = new ReactivePropertySlim<string>(config.SourcePath ?? string.Empty).AddTo(_disposable);
         this.LeftPath = new ReactivePropertySlim<string>(config.LeftPath ?? string.Empty).AddTo(_disposable);
         this.RightPath = new ReactivePropertySlim<string>(config.RightPath ?? string.Empty).AddTo(_disposable);
-        this.DownPath = new ReactivePropertySlim<string>(config.DownPath ?? string.Empty).AddTo(_disposable);
         this.ImageSource = new ReactivePropertySlim<Bitmap?>().AddTo(_disposable);
         this.LoadCommand = new ReactiveCommand().AddTo(_disposable);
         this.LoadCommand.Subscribe(() => this.Load()).AddTo(_disposable);
@@ -43,25 +64,12 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         this.RightCommand.Subscribe(() => this.Right()).AddTo(_disposable);
         this.LeftCommand = new ReactiveCommand().AddTo(_disposable);
         this.LeftCommand.Subscribe(() => this.Left()).AddTo(_disposable);
-        this.DownCommand = new ReactiveCommand().AddTo(_disposable);
-        this.DownCommand.Subscribe(() => this.Down()).AddTo(_disposable);
         this.ProgressText = new ReactivePropertySlim<string>().AddTo(_disposable);
     }
-    public ReactivePropertySlim<string> SourcePath { get; }
-    public ReactivePropertySlim<string> LeftPath { get; }
-    public ReactivePropertySlim<string> RightPath { get; }
-    public ReactivePropertySlim<string> DownPath { get; }
-    public ReactivePropertySlim<Bitmap?> ImageSource { get; }
-    public ReactiveCommand LoadCommand { get; }
-    public ReactiveCommand UndoCommand { get; }
-    public ReactiveCommand LeftCommand { get; }
-    public ReactiveCommand RightCommand { get; }
-    public ReactiveCommand DownCommand { get; }
-    public ReactivePropertySlim<string> ProgressText { get; }
 
     private async void Load()
     {
-        var sourcePath = this.SourcePath.Value;
+        var sourcePath = this.SourcePath?.Value;
         if (!Directory.Exists(sourcePath)) return;
 
         var extSet = new HashSet<string>() { ".png", ".jpg", ".jpeg" };
@@ -129,13 +137,6 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         this.Next();
     }
 
-    private void Down()
-    {
-        var downPath = this.DownPath.Value;
-        this.Move(downPath);
-        this.Next();
-    }
-
     private void Move(string dirPath)
     {
         if (_currentFilePath is null) return;
@@ -144,7 +145,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
         var sourceFilePath = _currentFilePath;
         var destinationFilePath = GenUniqueDestinationFilePath(dirPath, Path.GetFileName(_currentFilePath));
 
-        var history = new MovedFileHistory(sourceFilePath, destinationFilePath);
+        var history = new MovedFileHistory { SourceFilePath = sourceFilePath, DestinationFilePath = destinationFilePath };
         _movedFileHistoryStack.Push(history);
         File.Move(history.SourceFilePath, history.DestinationFilePath);
     }
@@ -197,7 +198,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
             }
         }
 
-        var oldImageSource = this.ImageSource.Value;
+        var oldImageSource = this.ImageSource!.Value;
         this.ImageSource.Value = newImageSource;
         oldImageSource?.Dispose();
 
@@ -211,13 +212,7 @@ public class MainWindowModel : IAsyncDisposable, IMainWindowModel
 
     private record class MovedFileHistory
     {
-        public MovedFileHistory(string sourceFilePath, string destinationFilePath)
-        {
-            this.SourceFilePath = sourceFilePath;
-            this.DestinationFilePath = destinationFilePath;
-        }
-
-        public string SourceFilePath { get; }
-        public string DestinationFilePath { get; }
+        public required string SourceFilePath { get; init; }
+        public required string DestinationFilePath { get; init; }
     }
 }
