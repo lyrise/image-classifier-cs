@@ -11,10 +11,10 @@
             "console": "internalConsole",
             "stopAtEntry": false,
             "windows": {
-                "program": "${workspaceFolder}/tmp/bin/win-vscode/ImageClassifier/Debug/net7.0/ImageClassifier.exe"
+                "program": "${workspaceFolder}/tmp/bin/win-vscode/ImageClassifier/Debug/net8.0/ImageClassifier.exe"
             },
             "linux": {
-                "program": "${workspaceFolder}/tmp/bin/linux-vscode/ImageClassifier/Debug/net7.0/ImageClassifier.dll",
+                "program": "${workspaceFolder}/tmp/bin/linux-vscode/ImageClassifier/Debug/net8.0/ImageClassifier.dll",
                 "envFile": "${workspaceFolder}/.env"
             }
         }
