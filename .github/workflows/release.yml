@@ -1,0 +1,77 @@
+name: release
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    env:
+      ContinuousIntegrationBuild: true
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          include-prerelease: true
+      - name: Setup dotnet tool
+        run: dotnet tool restore
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: bash build-linux.sh
+
+      - name: Set variables
+        id: variables
+        run: echo "release_version=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
+      - name: Zip
+        run: |
+          cd ./pub/linux-x64 && zip -r ../../image-classifier-linux-x64-${{ steps.variables.outputs.release_version }}.zip ./*
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            image-classifier-linux-x64-${{ steps.variables.outputs.release_version }}.zip
+
+  windows:
+    runs-on: windows-latest
+    env:
+      ContinuousIntegrationBuild: true
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          submodules: "recursive"
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+          include-prerelease: true
+      - name: Setup dotnet tool
+        run: dotnet tool restore
+      - name: Install dependencies
+        run: dotnet restore
+      - name: Build
+        run: pwsh build-win.ps1
+
+      - name: Set variables
+        id: variables
+        run: |
+          chcp 65001 #set code page to utf-8
+          echo ("release_version=" + $env:GITHUB_REF.replace('refs/tags/', '')) >> $env:GITHUB_OUTPUT
+      - name: Zip
+        uses: vimtor/action-zip@v1
+        with:
+          files: ./pub/win-x64
+          dest: image-classifier-win-x64-${{ steps.variables.outputs.release_version }}.zip
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            image-classifier-win-x64-${{ steps.variables.outputs.release_version }}.zip
