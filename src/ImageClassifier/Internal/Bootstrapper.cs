@@ -1,6 +1,6 @@
-using Microsoft.Extensions.DependencyInjection;
-using ImageClassifier.Windows.Main;
 using ImageClassifier.Configuration;
+using ImageClassifier.Windows.Main;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ImageClassifier.Internal;
 
