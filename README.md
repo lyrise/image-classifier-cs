@@ -10,6 +10,27 @@ Image Classifier is a desktop application that allows you to easily classify ima
 - Fast operation with multiple shortcut keys
 - Supports image movement and Undo functionality
 
+## Getting Started
+
+### Installation
+
+Download the latest release from the link below.
+
+- [Download for Windows and Linux](https://github.com/lyrise/image-classifier-cs/releases)
+
+### Launching the Application
+
+#### Debian and Ubuntu
+
+To launch the application on Debian and Ubuntu, set the necessary environment variables as follows:
+
+```sh
+export LANG=en_US.UTF-8
+SCALE=2
+SCREEN=$(xrandr --listactivemonitors | awk -F " " '{ printf("%s", $4) }')
+export AVALONIA_SCREEN_SCALE_FACTORS="$SCREEN=$SCALE"
+```
+
 ## How to Use
 
 1. **Load Function**
@@ -23,12 +44,6 @@ Image Classifier is a desktop application that allows you to easily classify ima
 
 4. **Left Function**
    Click the Left button or press the `Left Arrow` key or `H` key to move the selected image to the `Left:` directory.
-
-## Installation
-
-Download the latest release from the link below.
-
-- [Download for Windows and Linux](https://github.com/lyrise/image-classifier-cs/releases)
 
 ## License
 
