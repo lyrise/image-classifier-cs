@@ -45,10 +45,10 @@ export AVALONIA_SCREEN_SCALE_FACTORS="$SCREEN=$SCALE"
 4. **Left Function**
    Click the Left button or press the `Left Arrow` key or `H` key to move the selected image to the `Left:` directory.
 
-## License
-
-This project is released under the MIT License. For more details, please refer to the [LICENSE](LICENSE.txt) file.
-
 ## Contributing
 
 If you would like to contribute to this project, please contact us through [Issues](https://github.com/lyrise/image-classifier-cs/issues) or [Pull Requests](https://github.com/lyrise/image-classifier-cs/pulls) on GitHub.
+
+## License
+
+This project is released under the MIT License. For more details, please refer to the [LICENSE](LICENSE.txt) file.
