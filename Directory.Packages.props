@@ -65,7 +65,7 @@
     <PackageVersion Include="System.IO.Pipelines" Version="8.0.0" />
     <PackageVersion Include="System.Text.Json" Version="8.0.3" />
     <PackageVersion Include="TextMateSharp.Grammars" Version="1.0.56" />
-    <PackageVersion Include="YamlDotNet" Version="15.1.4" />
+    <PackageVersion Include="YamlDotNet" Version="15.1.6" />
   </ItemGroup>
 
 </Project>
