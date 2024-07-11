@@ -1,6 +1,6 @@
 using System.Reactive.Disposables;
 using Avalonia.Media.Imaging;
-using ImageClassifier.Configuration;
+using ImageClassifier.Shared;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
 

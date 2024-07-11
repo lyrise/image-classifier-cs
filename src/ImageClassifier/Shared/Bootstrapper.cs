@@ -1,8 +1,7 @@
-using ImageClassifier.Configuration;
 using ImageClassifier.Windows.Main;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace ImageClassifier.Internal;
+namespace ImageClassifier.Shared;
 
 public partial class Bootstrapper : IAsyncDisposable
 {

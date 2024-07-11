@@ -15,7 +15,7 @@ concurrency:
 
 env:
   StableTest: true
-  ContinuousIntegrationBuild: true
+  # ContinuousIntegrationBuild: true
 
 jobs:
   linux:

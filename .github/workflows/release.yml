@@ -5,11 +5,12 @@ on:
     tags:
       - "v*.*.*"
 
+# env:
+#   ContinuousIntegrationBuild: true
+
 jobs:
   linux:
     runs-on: ubuntu-latest
-    env:
-      ContinuousIntegrationBuild: true
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
@@ -41,8 +42,6 @@ jobs:
 
   windows:
     runs-on: windows-latest
-    env:
-      ContinuousIntegrationBuild: true
     steps:
       - name: Checkout branch
         uses: actions/checkout@v4
