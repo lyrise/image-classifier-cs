@@ -11,10 +11,15 @@
             "console": "internalConsole",
             "stopAtEntry": false,
             "windows": {
-                "program": "${workspaceFolder}/tmp/bin/win-vscode/ImageClassifier/Debug/net8.0/ImageClassifier.exe"
+                "program": "${workspaceFolder}/tmp/bin/win-vscode/ImageClassifier/Debug/net8.0/ImageClassifier.exe",
+                "envFile": "${workspaceFolder}/.env"
             },
             "linux": {
                 "program": "${workspaceFolder}/tmp/bin/linux-vscode/ImageClassifier/Debug/net8.0/ImageClassifier.dll",
+                "envFile": "${workspaceFolder}/.env"
+            },
+            "osx": {
+                "program": "${workspaceFolder}/tmp/bin/osx-vscode/ImageClassifier/Debug/net8.0/ImageClassifier.dll",
                 "envFile": "${workspaceFolder}/.env"
             }
         }

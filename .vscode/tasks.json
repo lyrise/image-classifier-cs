@@ -3,9 +3,17 @@
     "tasks": [
         {
             "label": "gen-envfile",
-            "type": "shell",
+            "windows": {
+                "command": "pwsh",
+                "args": ["-File", "${workspaceFolder}/eng/gen-envfile-win.ps1"]
+            },
             "linux": {
-                "command": "bash ${workspaceFolder}/eng/gen-envfile.sh"
+                "command": "bash",
+                "args": ["${workspaceFolder}/eng/gen-envfile-linux.sh"]
+            },
+            "osx": {
+                "command": "bash",
+                "args": ["${workspaceFolder}/eng/gen-envfile-mac.sh"]
             }
         },
         {
