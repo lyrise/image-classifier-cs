@@ -9,13 +9,15 @@ namespace ImageClassifier.Windows.Main;
 public class MainWindowModelBase
 {
     public required ReactivePropertySlim<string> SourcePath { get; init; }
-    public required ReactivePropertySlim<string> LeftPath { get; init; }
     public required ReactivePropertySlim<string> RightPath { get; init; }
+    public required ReactivePropertySlim<string> LeftPath { get; init; }
+    public required ReactivePropertySlim<string> DownPath { get; init; }
     public required ReactivePropertySlim<Bitmap?> ImageSource { get; init; }
     public required ReactiveCommand LoadCommand { get; init; }
     public required ReactiveCommand UndoCommand { get; init; }
-    public required ReactiveCommand LeftCommand { get; init; }
     public required ReactiveCommand RightCommand { get; init; }
+    public required ReactiveCommand LeftCommand { get; init; }
+    public required ReactiveCommand DownCommand { get; init; }
     public required ReactivePropertySlim<string> ProgressText { get; init; }
 }
 
@@ -33,6 +35,7 @@ public class MainWindowDesignModel : MainWindowModelBase, IDisposable
         this.UndoCommand = new ReactiveCommand().AddTo(_disposable);
         this.RightCommand = new ReactiveCommand().AddTo(_disposable);
         this.LeftCommand = new ReactiveCommand().AddTo(_disposable);
+        this.DownCommand = new ReactiveCommand().AddTo(_disposable);
         this.ProgressText = new ReactivePropertySlim<string>().AddTo(_disposable);
     }
 
@@ -53,8 +56,9 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
     public MainWindowModel(AppConfig config)
     {
         this.SourcePath = new ReactivePropertySlim<string>(config.SourcePath ?? string.Empty).AddTo(_disposable);
-        this.LeftPath = new ReactivePropertySlim<string>(config.LeftPath ?? string.Empty).AddTo(_disposable);
         this.RightPath = new ReactivePropertySlim<string>(config.RightPath ?? string.Empty).AddTo(_disposable);
+        this.LeftPath = new ReactivePropertySlim<string>(config.LeftPath ?? string.Empty).AddTo(_disposable);
+        this.DownPath = new ReactivePropertySlim<string>(config.DownPath ?? string.Empty).AddTo(_disposable);
         this.ImageSource = new ReactivePropertySlim<Bitmap?>().AddTo(_disposable);
         this.LoadCommand = new ReactiveCommand().AddTo(_disposable);
         this.LoadCommand.Subscribe(() => this.Load()).AddTo(_disposable);
@@ -64,6 +68,8 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         this.RightCommand.Subscribe(() => this.Right()).AddTo(_disposable);
         this.LeftCommand = new ReactiveCommand().AddTo(_disposable);
         this.LeftCommand.Subscribe(() => this.Left()).AddTo(_disposable);
+        this.DownCommand = new ReactiveCommand().AddTo(_disposable);
+        this.DownCommand.Subscribe(() => this.Down()).AddTo(_disposable);
         this.ProgressText = new ReactivePropertySlim<string>().AddTo(_disposable);
     }
 
@@ -134,6 +140,13 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
     {
         var leftPath = this.LeftPath.Value;
         this.Move(leftPath);
+        this.Next();
+    }
+
+    private void Down()
+    {
+        var downPath = this.DownPath.Value;
+        this.Move(downPath);
         this.Next();
     }
 

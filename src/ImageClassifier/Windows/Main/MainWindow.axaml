@@ -17,38 +17,47 @@
         <local:MainWindowDesignModel />
     </Design.DataContext>
 
-    <Grid RowDefinitions="Auto,*">
-        <Grid Grid.Row="0">
-            <StackPanel Orientation="Vertical" Spacing="8" Margin="16">
-                <DockPanel>
-                    <Label DockPanel.Dock="Left" MinWidth="60" Content="Source:" VerticalAlignment="Center" />
-                    <TextBox Text="{Binding SourcePath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
-                </DockPanel>
-                <DockPanel>
-                    <Label DockPanel.Dock="Left" MinWidth="60" Content="Right:" VerticalAlignment="Center" />
-                    <TextBox Text="{Binding RightPath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
-                </DockPanel>
-                <DockPanel>
-                    <Label DockPanel.Dock="Left" MinWidth="60" Content="Left:" VerticalAlignment="Center" />
-                    <TextBox Text="{Binding LeftPath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
-                </DockPanel>
-            </StackPanel>
-        </Grid>
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto">
-            <Image Grid.Column="0" Source="{Binding ImageSource.Value}" />
-            <Grid Grid.Column="1" RowDefinitions="*,Auto" Margin="16" Width="120">
-                <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="8">
-                    <Button Content="Load" Command="{Binding LoadCommand}" HorizontalAlignment="Stretch" />
-                    <Button Content="Undo" Command="{Binding UndoCommand}" HorizontalAlignment="Stretch" />
-                    <Button Content="Right" Command="{Binding RightCommand}" HorizontalAlignment="Stretch" />
-                    <Button Content="Left" Command="{Binding LeftCommand}" HorizontalAlignment="Stretch" />
-                </StackPanel>
-                <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right">
-                    <StackPanel Grid.Column="1" Orientation="Vertical">
-                        <TextBlock Text="{Binding ProgressText.Value}" />
-                    </StackPanel>
+    <Grid>
+        <TabControl>
+            <TabItem Header="Viewer">
+                <Grid ColumnDefinitions="*,Auto">
+                    <Image Grid.Column="0" Source="{Binding ImageSource.Value}" />
+                    <Grid Grid.Column="1" RowDefinitions="*,Auto" Margin="16" Width="120">
+                        <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="8">
+                            <Button Content="Load" Command="{Binding LoadCommand}" HorizontalAlignment="Stretch" />
+                            <Button Content="Undo" Command="{Binding UndoCommand}" HorizontalAlignment="Stretch" />
+                            <Button Content="Right" Command="{Binding RightCommand}" HorizontalAlignment="Stretch" />
+                            <Button Content="Left" Command="{Binding LeftCommand}" HorizontalAlignment="Stretch" />
+                            <Button Content="Down" Command="{Binding DownCommand}" HorizontalAlignment="Stretch" />
+                        </StackPanel>
+                        <Grid VerticalAlignment="Bottom" HorizontalAlignment="Right">
+                            <StackPanel Grid.Column="1" Orientation="Vertical">
+                                <TextBlock Text="{Binding ProgressText.Value}" />
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
                 </Grid>
-            </Grid>
-        </Grid>
+            </TabItem>
+            <TabItem Header="Settings">
+                <StackPanel Orientation="Vertical" Spacing="8" Margin="16">
+                    <DockPanel>
+                        <Label DockPanel.Dock="Left" MinWidth="60" Content="Source:" VerticalAlignment="Center" />
+                        <TextBox Text="{Binding SourcePath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
+                    </DockPanel>
+                    <DockPanel>
+                        <Label DockPanel.Dock="Left" MinWidth="60" Content="Right:" VerticalAlignment="Center" />
+                        <TextBox Text="{Binding RightPath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
+                    </DockPanel>
+                    <DockPanel>
+                        <Label DockPanel.Dock="Left" MinWidth="60" Content="Left:" VerticalAlignment="Center" />
+                        <TextBox Text="{Binding LeftPath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
+                    </DockPanel>
+                    <DockPanel>
+                        <Label DockPanel.Dock="Left" MinWidth="60" Content="Down:" VerticalAlignment="Center" />
+                        <TextBox Text="{Binding DownPath.Value}" Margin="8,0" TextWrapping="NoWrap" ScrollViewer.VerticalScrollBarVisibility="Hidden" />
+                    </DockPanel>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
     </Grid>
 </Window>

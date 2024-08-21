@@ -40,6 +40,10 @@ public partial class MainWindow : Window
             {
                 windowModel.LeftCommand.Execute();
             }
+            else if (e.Key == Key.Down || e.Key == Key.J)
+            {
+                windowModel.DownCommand.Execute();
+            }
         }
     }
 
