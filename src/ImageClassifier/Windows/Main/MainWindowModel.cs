@@ -79,7 +79,7 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         if (!Directory.Exists(sourcePath)) return;
 
         var extSet = new HashSet<string>() { ".png", ".jpg", ".jpeg" };
-        var tempList = GetFiles(sourcePath).Where(n => extSet.Contains(Path.GetExtension(n).ToLower())).Take(10000).ToList();
+        var tempList = GetFiles(sourcePath).Where(n => extSet.Contains(Path.GetExtension(n).ToLower())).Take(5000).ToList();
         tempList.Sort((x, y) => y.CompareTo(x));
 
         _loadedFilePathStack.Clear();
