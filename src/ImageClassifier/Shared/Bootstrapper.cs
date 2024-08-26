@@ -1,3 +1,6 @@
+using System.Diagnostics;
+using CommandLine;
+using FluentAvalonia.Core;
 using ImageClassifier.Windows.Main;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -11,17 +14,25 @@ public partial class Bootstrapper : IAsyncDisposable
 
     public static Bootstrapper Instance { get; } = new Bootstrapper();
 
-    private const string APP_CONFIG_FILE_NAME = "config.json";
-
     private Bootstrapper()
     {
+    }
+
+    public class Options
+    {
+        [Option('c', "config")]
+        public string ConfigPath { get; set; } = "config.json";
+
+        [Option('v', "verbose")]
+        public bool Verbose { get; set; } = false;
     }
 
     public async ValueTask BuildAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var config = await AppConfig.LoadAsync(Path.Combine(Directory.GetCurrentDirectory(), APP_CONFIG_FILE_NAME));
+            var parsedResult = CommandLine.Parser.Default.ParseArguments<Options>(Environment.GetCommandLineArgs());
+            var config = await AppConfig.LoadAsync(parsedResult.Value.ConfigPath);
 
             var serviceCollection = new ServiceCollection();
 
