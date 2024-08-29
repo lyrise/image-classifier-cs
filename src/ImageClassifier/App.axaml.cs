@@ -6,20 +6,32 @@ using Avalonia.Markup.Xaml;
 using ImageClassifier.Shared;
 using ImageClassifier.Windows.Main;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace ImageClassifier;
 
 public class App : Application
 {
-    private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
+    private readonly ILogger _logger;
 
     private FileStream? _lockFileStream;
+
+    public App()
+    {
+        var loggerFactory = LoggerFactory.Create(builder =>
+        {
+            builder
+                .AddConsole()
+                .AddDebug();
+        });
+        _logger = loggerFactory.CreateLogger<App>();
+    }
 
     public override void Initialize()
     {
         if (!this.IsDesignMode)
         {
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler((_, e) => _logger.Error(e));
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler((_, e) => _logger.LogError(e.ExceptionObject as Exception, "Unhandled Exception"));
             this.ApplicationLifetime!.Exit += (_, _) => this.Exit();
         }
 
@@ -55,12 +67,10 @@ public class App : Application
     {
         try
         {
-            SetLogsDirectory("./logs");
-
             _lockFileStream = new FileStream("./lock", FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None, 1, FileOptions.DeleteOnClose);
 
-            _logger.Info("Starting...");
-            _logger.Info("AssemblyInformationalVersion: {0}", Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
+            _logger.LogInformation("Starting...");
+            _logger.LogInformation("AssemblyInformationalVersion: {0}", Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion);
 
             var mainWindow = new MainWindow();
 
@@ -76,33 +86,15 @@ public class App : Application
         }
         catch (Exception e)
         {
-            _logger.Error(e, "Unexpected Exception");
+            _logger.LogError(e, "Unexpected Exception");
         }
-    }
-
-    private void SetLogsDirectory(string logsDirectoryPath)
-    {
-        var target = (NLog.Targets.FileTarget)NLog.LogManager.Configuration.FindTargetByName("log_file");
-        target.FileName = $"{Path.GetFullPath(logsDirectoryPath)}/${{date:format=yyyy-MM-dd}}.log";
-        target.ArchiveFileName = $"{Path.GetFullPath(logsDirectoryPath)}/archives/{{#}}.log";
-        NLog.LogManager.ReconfigExistingLoggers();
-    }
-
-    private void ChangeLogLevel(NLog.LogLevel minLevel)
-    {
-        _logger.Debug("Log level changed: {0}", minLevel);
-
-        var rootLoggingRule = NLog.LogManager.Configuration.LoggingRules.First(n => n.NameMatches("*"));
-        rootLoggingRule.EnableLoggingForLevels(minLevel, NLog.LogLevel.Fatal);
-        NLog.LogManager.ReconfigExistingLoggers();
     }
 
     private async void Exit()
     {
         await Bootstrapper.Instance.DisposeAsync();
 
-        _logger.Info("Stopping...");
-        NLog.LogManager.Shutdown();
+        _logger.LogInformation("Stopping...");
 
         _lockFileStream?.Dispose();
     }

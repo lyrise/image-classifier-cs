@@ -8,8 +8,6 @@ namespace ImageClassifier.Shared;
 
 public partial class Bootstrapper : IAsyncDisposable
 {
-    private static readonly NLog.Logger _logger = NLog.LogManager.GetCurrentClassLogger();
-
     private ServiceProvider? _serviceProvider;
 
     public static Bootstrapper Instance { get; } = new Bootstrapper();
@@ -29,30 +27,23 @@ public partial class Bootstrapper : IAsyncDisposable
 
     public async ValueTask BuildAsync(CancellationToken cancellationToken = default)
     {
+        AppConfig config;
         try
         {
             var parsedResult = CommandLine.Parser.Default.ParseArguments<Options>(Environment.GetCommandLineArgs());
-            var config = await AppConfig.LoadAsync(parsedResult.Value.ConfigPath);
-
-            var serviceCollection = new ServiceCollection();
-
-            serviceCollection.AddSingleton(config);
-            serviceCollection.AddTransient<MainWindowModel>();
-
-            _serviceProvider = serviceCollection.BuildServiceProvider();
+            config = await AppConfig.LoadAsync(parsedResult.Value.ConfigPath);
         }
-        catch (OperationCanceledException e)
+        catch (FileNotFoundException)
         {
-            _logger.Debug(e);
-
-            throw;
+            config = new AppConfig();
         }
-        catch (Exception e)
-        {
-            _logger.Error(e);
 
-            throw;
-        }
+        var serviceCollection = new ServiceCollection();
+
+        serviceCollection.AddSingleton(config);
+        serviceCollection.AddTransient<MainWindowModel>();
+
+        _serviceProvider = serviceCollection.BuildServiceProvider();
     }
 
     public ServiceProvider GetServiceProvider()
