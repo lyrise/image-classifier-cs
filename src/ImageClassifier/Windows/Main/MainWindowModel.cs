@@ -71,6 +71,8 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         this.DownCommand = new ReactiveCommand().AddTo(_disposable);
         this.DownCommand.Subscribe(() => this.Down()).AddTo(_disposable);
         this.ProgressText = new ReactivePropertySlim<string>().AddTo(_disposable);
+
+        this.Load();
     }
 
     private async void Load()
