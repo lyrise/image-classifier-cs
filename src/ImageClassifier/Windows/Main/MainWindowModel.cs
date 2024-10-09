@@ -1,5 +1,7 @@
+using System.Diagnostics;
 using System.Reactive.Disposables;
 using Avalonia.Media.Imaging;
+using ImageClassifier.Internal;
 using ImageClassifier.Shared;
 using Reactive.Bindings;
 using Reactive.Bindings.Extensions;
@@ -50,11 +52,18 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
     private Stack<string> _loadedFilePathStack = new();
     private Stack<MovedFileHistory> _movedFileHistoryStack = new();
     private string? _currentFilePath = null;
+    private FileCache _fileCache = new(1024 * 1024 * 100, 100);
+
+    private Task _backgroundFileLoadTask;
+    private AutoResetEvent _changedEvent = new AutoResetEvent(false);
 
     private CompositeDisposable _disposable = new();
+    private CancellationTokenSource _cancellationTokenSource = new();
 
     public MainWindowModel(AppConfig config)
     {
+        _backgroundFileLoadTask = this.BackgroundFileLoadAsync(_cancellationTokenSource.Token);
+
         this.SourcePath = new ReactivePropertySlim<string>(config.SourcePath ?? string.Empty).AddTo(_disposable);
         this.RightPath = new ReactivePropertySlim<string>(config.RightPath ?? string.Empty).AddTo(_disposable);
         this.LeftPath = new ReactivePropertySlim<string>(config.LeftPath ?? string.Empty).AddTo(_disposable);
@@ -73,6 +82,42 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         this.ProgressText = new ReactivePropertySlim<string>().AddTo(_disposable);
 
         this.Load();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cancellationTokenSource.Cancel();
+
+        await _backgroundFileLoadTask;
+
+        _cancellationTokenSource.Dispose();
+
+        _disposable.Dispose();
+    }
+
+    private async Task BackgroundFileLoadAsync(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+
+            for (; ; )
+            {
+                await _changedEvent.WaitAsync(cancellationToken);
+
+                foreach (var path in _loadedFilePathStack.ToArray().Take(32))
+                {
+                    if (await _fileCache.TryPrefetchAsync(path))
+                    {
+                        Debug.WriteLine($"Loaded: {path}");
+                    }
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // ignore
+        }
     }
 
     private async void Load()
@@ -179,8 +224,10 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         throw new NotSupportedException();
     }
 
-    private void Next()
+    private async void Next()
     {
+        _changedEvent.Set();
+
         this.ProgressText.Value = string.Format($"{_movedFileHistoryStack.Count} / {_movedFileHistoryStack.Count + _loadedFilePathStack.Count}");
 
         string? nextFilePath = null;
@@ -202,9 +249,8 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
             try
             {
                 nextFilePath = _loadedFilePathStack.Pop();
-                using var fileStream = File.Open(nextFilePath, FileMode.Open);
-                if (fileStream.Length > 1024 * 1024 * 100) continue;
-                newImageSource = new Bitmap(fileStream);
+                using var stream = await _fileCache.GetStreamAsync(nextFilePath);
+                newImageSource = new Bitmap(stream);
                 break;
             }
             catch (Exception)
@@ -218,11 +264,6 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         oldImageSource?.Dispose();
 
         _currentFilePath = nextFilePath;
-    }
-
-    public async ValueTask DisposeAsync()
-    {
-        _disposable.Dispose();
     }
 
     private record class MovedFileHistory
