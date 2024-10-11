@@ -181,6 +181,12 @@
           "Microsoft.Extensions.Logging.Abstractions": "8.0.2"
         }
       },
+      "NeoSmart.AsyncLock": {
+        "type": "Direct",
+        "requested": "[3.2.1, )",
+        "resolved": "3.2.1",
+        "contentHash": "bYIpqtgA5oZWdSgcsGA4XLkKVYuz6Qc+aEVfTYPOIX2rSFbb8NFxHcBb5V62qio8Q6Au/Xn+7ci86VW9vqIk0w=="
+      },
       "ReactiveProperty": {
         "type": "Direct",
         "requested": "[9.6.0, )",

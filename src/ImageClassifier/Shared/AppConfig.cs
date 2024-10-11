@@ -10,7 +10,7 @@ public sealed class AppConfig
     public string? RightPath { get; set; }
     public string? DownPath { get; set; }
 
-    public static async ValueTask<AppConfig> LoadAsync(string configPath)
+    public static async ValueTask<AppConfig?> LoadAsync(string configPath)
     {
         var options = new JsonSerializerOptions
         {

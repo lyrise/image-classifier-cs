@@ -27,13 +27,17 @@ public partial class Bootstrapper : IAsyncDisposable
 
     public async ValueTask BuildAsync(CancellationToken cancellationToken = default)
     {
-        AppConfig config;
+        AppConfig? config = null;
         try
         {
             var parsedResult = CommandLine.Parser.Default.ParseArguments<Options>(Environment.GetCommandLineArgs());
             config = await AppConfig.LoadAsync(parsedResult.Value.ConfigPath);
         }
         catch (FileNotFoundException)
+        {
+        }
+
+        if (config is null)
         {
             config = new AppConfig();
         }

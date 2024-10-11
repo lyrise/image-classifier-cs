@@ -11,6 +11,7 @@ public class FileCache
 
     private readonly ConcurrentDictionary<string, Entry> _cacheEntries = new();
 
+    private readonly NeoSmart.AsyncLock.AsyncLock _asyncLock = new NeoSmart.AsyncLock.AsyncLock();
     private readonly object _lockObject = new();
 
     public FileCache(int maxFileSize, int maxCachedFileCount)
@@ -21,61 +22,67 @@ public class FileCache
 
     public async ValueTask<bool> TryPrefetchAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        lock (_lockObject)
+        using (await _asyncLock.LockAsync(cancellationToken))
         {
-            if (_cacheEntries.TryGetValue(filePath, out var entry))
+            lock (_lockObject)
             {
-                return false;
-            }
-        }
-
-        using var fileStream = File.Open(filePath, FileMode.Open);
-        if (fileStream.Length > _maxFileSize) throw new IOException("too large");
-
-        var memoryOwner = _memoryPool.Rent((int)fileStream.Length);
-        await fileStream.ReadExactlyAsync(memoryOwner.Memory[..(int)fileStream.Length], cancellationToken);
-
-        lock (_lockObject)
-        {
-            var entry = new Entry
-            {
-                MemoryOwner = memoryOwner,
-                Size = (int)fileStream.Length,
-                UpdatedTime = DateTime.Now,
-            };
-            _cacheEntries.TryAdd(filePath, entry);
-
-            if (_cacheEntries.Count > _maxCachedFileCount)
-            {
-                foreach (var oldEntry in _cacheEntries.OrderBy(n => n.Value.UpdatedTime).Take(_cacheEntries.Count - 100))
+                if (_cacheEntries.TryGetValue(filePath, out var entry))
                 {
-                    oldEntry.Value.MemoryOwner.Dispose();
-                    _cacheEntries.TryRemove(oldEntry);
+                    return false;
                 }
             }
 
-            return true;
+            using var fileStream = File.Open(filePath, FileMode.Open);
+            if (fileStream.Length > _maxFileSize) throw new IOException("too large");
+
+            var memoryOwner = _memoryPool.Rent((int)fileStream.Length);
+            await fileStream.ReadExactlyAsync(memoryOwner.Memory[..(int)fileStream.Length], cancellationToken);
+
+            lock (_lockObject)
+            {
+                var entry = new Entry
+                {
+                    MemoryOwner = memoryOwner,
+                    Size = (int)fileStream.Length,
+                    UpdatedTime = DateTime.Now,
+                };
+                _cacheEntries.TryAdd(filePath, entry);
+
+                if (_cacheEntries.Count > _maxCachedFileCount)
+                {
+                    foreach (var oldEntry in _cacheEntries.OrderBy(n => n.Value.UpdatedTime).Take(_cacheEntries.Count - 100))
+                    {
+                        oldEntry.Value.MemoryOwner.Dispose();
+                        _cacheEntries.TryRemove(oldEntry);
+                    }
+                }
+
+                return true;
+            }
         }
     }
 
     public async ValueTask<Stream> GetStreamAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        await this.TryPrefetchAsync(filePath);
-
-        lock (_lockObject)
+        using (await _asyncLock.LockAsync(cancellationToken))
         {
-            if (_cacheEntries.TryGetValue(filePath, out var entry))
+            await this.TryPrefetchAsync(filePath);
+
+            lock (_lockObject)
             {
-                entry.UpdatedTime = DateTime.Now;
+                if (_cacheEntries.TryGetValue(filePath, out var entry))
+                {
+                    entry.UpdatedTime = DateTime.Now;
 
-                var memoryStream = new MemoryStream();
-                memoryStream.WriteAsync(entry.MemoryOwner.Memory[..entry.Size], cancellationToken);
-                memoryStream.Seek(0, SeekOrigin.Begin);
+                    var memoryStream = new MemoryStream();
+                    memoryStream.WriteAsync(entry.MemoryOwner.Memory[..entry.Size], cancellationToken);
+                    memoryStream.Seek(0, SeekOrigin.Begin);
 
-                return memoryStream;
+                    return memoryStream;
+                }
+
+                throw new IOException("Unexpected Error");
             }
-
-            throw new IOException("Unexpected Error");
         }
     }
 

@@ -41,6 +41,7 @@
     <PackageReference Include="ReactiveProperty" />
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="System.Text.Json" />
+    <PackageReference Include="NeoSmart.AsyncLock" />
   </ItemGroup>
 
 </Project>
