@@ -10,6 +10,7 @@ namespace ImageClassifier.Windows.Main;
 
 public class MainWindowModelBase
 {
+    public required ReactivePropertySlim<bool> IsWaiting { get; init; }
     public required ReactivePropertySlim<string> SourcePath { get; init; }
     public required ReactivePropertySlim<string> RightPath { get; init; }
     public required ReactivePropertySlim<string> LeftPath { get; init; }
@@ -29,6 +30,7 @@ public class MainWindowDesignModel : MainWindowModelBase, IDisposable
 
     public MainWindowDesignModel()
     {
+        this.IsWaiting = new ReactivePropertySlim<bool>(false).AddTo(_disposable);
         this.SourcePath = new ReactivePropertySlim<string>(@"C:\").AddTo(_disposable);
         this.LeftPath = new ReactivePropertySlim<string>(@"D:\").AddTo(_disposable);
         this.RightPath = new ReactivePropertySlim<string>(@"E:\").AddTo(_disposable);
@@ -57,6 +59,8 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
     private Task _backgroundFileLoadTask;
     private AutoResetEvent _changedEvent = new AutoResetEvent(false);
 
+    private readonly NeoSmart.AsyncLock.AsyncLock _asyncLock = new NeoSmart.AsyncLock.AsyncLock();
+
     private CompositeDisposable _disposable = new();
     private CancellationTokenSource _cancellationTokenSource = new();
 
@@ -64,6 +68,7 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
     {
         _backgroundFileLoadTask = this.BackgroundFileLoadAsync(_cancellationTokenSource.Token);
 
+        this.IsWaiting = new ReactivePropertySlim<bool>(false).AddTo(_disposable);
         this.SourcePath = new ReactivePropertySlim<string>(config.SourcePath ?? string.Empty).AddTo(_disposable);
         this.RightPath = new ReactivePropertySlim<string>(config.RightPath ?? string.Empty).AddTo(_disposable);
         this.LeftPath = new ReactivePropertySlim<string>(config.LeftPath ?? string.Empty).AddTo(_disposable);
@@ -122,20 +127,34 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
 
     private async void Load()
     {
-        var sourcePath = this.SourcePath?.Value;
-        if (!Directory.Exists(sourcePath)) return;
+        if (this.IsWaiting.Value) return;
 
-        var extSet = new HashSet<string>() { ".png", ".jpg", ".jpeg" };
-        var tempList = GetFiles(sourcePath).Where(n => extSet.Contains(Path.GetExtension(n).ToLower())).Take(5000).ToList();
-        tempList.Sort((x, y) => y.CompareTo(x));
-
-        _loadedFilePathStack.Clear();
-        foreach (var path in tempList)
+        using (await _asyncLock.LockAsync())
         {
-            _loadedFilePathStack.Push(path);
-        }
+            try
+            {
+                this.IsWaiting.Value = true;
 
-        this.Next();
+                var sourcePath = this.SourcePath?.Value;
+                if (!Directory.Exists(sourcePath)) return;
+
+                var extSet = new HashSet<string>() { ".png", ".jpg", ".jpeg" };
+                var tempList = GetFiles(sourcePath).Where(n => extSet.Contains(Path.GetExtension(n).ToLower())).Take(5000).ToList();
+                tempList.Sort((x, y) => y.CompareTo(x));
+
+                _loadedFilePathStack.Clear();
+                foreach (var path in tempList)
+                {
+                    _loadedFilePathStack.Push(path);
+                }
+
+                await this.NextAsync();
+            }
+            finally
+            {
+                this.IsWaiting.Value = false;
+            }
+        }
     }
 
     private static IEnumerable<string> GetFiles(string sourcePath)
@@ -160,41 +179,97 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         }
     }
 
-    private void Undo()
+    private async void Undo()
     {
-        if (_movedFileHistoryStack.Count == 0) return;
+        if (this.IsWaiting.Value) return;
 
-        if (_currentFilePath is not null)
+        using (await _asyncLock.LockAsync())
         {
-            _loadedFilePathStack.Push(_currentFilePath);
+            try
+            {
+                this.IsWaiting.Value = true;
+
+                if (_movedFileHistoryStack.Count == 0) return;
+
+                if (_currentFilePath is not null)
+                {
+                    _loadedFilePathStack.Push(_currentFilePath);
+                }
+
+                var history = _movedFileHistoryStack.Pop();
+                File.Move(history.DestinationFilePath, history.SourceFilePath);
+                _loadedFilePathStack.Push(history.SourceFilePath);
+
+                await this.NextAsync();
+            }
+            finally
+            {
+                this.IsWaiting.Value = false;
+            }
         }
-
-        var history = _movedFileHistoryStack.Pop();
-        File.Move(history.DestinationFilePath, history.SourceFilePath);
-        _loadedFilePathStack.Push(history.SourceFilePath);
-
-        this.Next();
     }
 
-    private void Right()
+    private async void Right()
     {
-        var rightPath = this.RightPath.Value;
-        this.Move(rightPath);
-        this.Next();
+        if (this.IsWaiting.Value) return;
+
+        using (await _asyncLock.LockAsync())
+        {
+            try
+            {
+                this.IsWaiting.Value = true;
+
+                var rightPath = this.RightPath.Value;
+                this.Move(rightPath);
+                await this.NextAsync();
+            }
+            finally
+            {
+                this.IsWaiting.Value = false;
+            }
+        }
     }
 
-    private void Left()
+    private async void Left()
     {
-        var leftPath = this.LeftPath.Value;
-        this.Move(leftPath);
-        this.Next();
+        if (this.IsWaiting.Value) return;
+
+        using (await _asyncLock.LockAsync())
+        {
+            try
+            {
+                this.IsWaiting.Value = true;
+
+                var leftPath = this.LeftPath.Value;
+                this.Move(leftPath);
+                await this.NextAsync();
+            }
+            finally
+            {
+                this.IsWaiting.Value = false;
+            }
+        }
     }
 
-    private void Down()
+    private async void Down()
     {
-        var downPath = this.DownPath.Value;
-        this.Move(downPath);
-        this.Next();
+        if (this.IsWaiting.Value) return;
+
+        using (await _asyncLock.LockAsync())
+        {
+            try
+            {
+                this.IsWaiting.Value = true;
+
+                var downPath = this.DownPath.Value;
+                this.Move(downPath);
+                await this.NextAsync();
+            }
+            finally
+            {
+                this.IsWaiting.Value = false;
+            }
+        }
     }
 
     private void Move(string dirPath)
@@ -224,7 +299,7 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
         throw new NotSupportedException();
     }
 
-    private async void Next()
+    private async ValueTask NextAsync()
     {
         _changedEvent.Set();
 

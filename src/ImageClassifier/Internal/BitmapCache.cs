@@ -23,7 +23,9 @@ public class BitmapCache
 
     public async ValueTask<bool> TryPrefetchAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        using (await _asyncLock.LockAsync(cancellationToken))
+        await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+
+        using (await _asyncLock.LockAsync(cancellationToken).ConfigureAwait(false))
         {
             lock (_lockObject)
             {
@@ -36,7 +38,11 @@ public class BitmapCache
             using var fileStream = File.Open(filePath, FileMode.Open);
             if (fileStream.Length > _maxFileSize) throw new IOException("too large");
 
-            var image = new Bitmap(fileStream);
+            using var memoryStream = new MemoryStream();
+            await fileStream.CopyToAsync(memoryStream, cancellationToken).ConfigureAwait(false);
+            memoryStream.Seek(0, SeekOrigin.Begin);
+
+            var image = new Bitmap(memoryStream);
 
             lock (_lockObject)
             {
@@ -63,9 +69,11 @@ public class BitmapCache
 
     public async ValueTask<Bitmap> GetImageAsync(string filePath, CancellationToken cancellationToken = default)
     {
-        using (await _asyncLock.LockAsync(cancellationToken))
+        await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+
+        using (await _asyncLock.LockAsync(cancellationToken).ConfigureAwait(false))
         {
-            await this.TryPrefetchAsync(filePath);
+            await this.TryPrefetchAsync(filePath).ConfigureAwait(false);
 
             lock (_lockObject)
             {

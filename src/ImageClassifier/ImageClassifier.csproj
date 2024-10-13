@@ -42,6 +42,7 @@
     <PackageReference Include="YamlDotNet" />
     <PackageReference Include="System.Text.Json" />
     <PackageReference Include="NeoSmart.AsyncLock" />
+    <PackageReference Include="FluentAvalonia.ProgressRing" />
   </ItemGroup>
 
 </Project>

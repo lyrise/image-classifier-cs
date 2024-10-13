@@ -3,6 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Avalonia.Xaml.Interactivity"
     xmlns:ia="clr-namespace:Avalonia.Xaml.Interactions.Core;assembly=Avalonia.Xaml.Interactions"
+    xmlns:pr="clr-namespace:FluentAvalonia.UI.Controls;assembly=FluentAvalonia.ProgressRing"
     xmlns:local="clr-namespace:ImageClassifier.Windows.Main;assembly=ImageClassifier"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -17,7 +18,10 @@
         <local:MainWindowDesignModel />
     </Design.DataContext>
 
-    <Grid>
+    <Panel>
+        <Panel ZIndex="1" IsEnabled="{Binding IsWaiting.Value}" IsVisible="{Binding IsWaiting.Value}">
+            <pr:ProgressRing Margin="0,0,0,16" DockPanel.Dock="Top" HorizontalAlignment="Center" VerticalAlignment="Center" IsIndeterminate="True" BorderThickness="10" Width="200" Height="200" />
+        </Panel>
         <TabControl>
             <TabItem Header="Viewer">
                 <Grid ColumnDefinitions="*,Auto">
@@ -59,5 +63,5 @@
                 </StackPanel>
             </TabItem>
         </TabControl>
-    </Grid>
+    </Panel>
 </Window>
