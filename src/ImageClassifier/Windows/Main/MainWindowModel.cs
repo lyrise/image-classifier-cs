@@ -52,7 +52,7 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
     private Stack<string> _loadedFilePathStack = new();
     private Stack<MovedFileHistory> _movedFileHistoryStack = new();
     private string? _currentFilePath = null;
-    private FileCache _fileCache = new(1024 * 1024 * 100, 100);
+    private BitmapCache _bitmapCache = new(1024 * 1024 * 100, 100);
 
     private Task _backgroundFileLoadTask;
     private AutoResetEvent _changedEvent = new AutoResetEvent(false);
@@ -107,7 +107,7 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
 
                 foreach (var path in _loadedFilePathStack.ToArray().Take(32))
                 {
-                    if (await _fileCache.TryPrefetchAsync(path))
+                    if (await _bitmapCache.TryPrefetchAsync(path))
                     {
                         Debug.WriteLine($"Loaded: {path}");
                     }
@@ -230,40 +230,27 @@ public class MainWindowModel : MainWindowModelBase, IAsyncDisposable
 
         this.ProgressText.Value = string.Format($"{_movedFileHistoryStack.Count} / {_movedFileHistoryStack.Count + _loadedFilePathStack.Count}");
 
-        string? nextFilePath = null;
-        Bitmap? newImageSource = null;
-
         for (; ; )
         {
             if (_loadedFilePathStack.Count == 0)
             {
-                var imageSource = this.ImageSource.Value;
                 this.ImageSource.Value = null;
-                imageSource?.Dispose();
-
                 _currentFilePath = null;
-
                 return;
             }
 
             try
             {
-                nextFilePath = _loadedFilePathStack.Pop();
-                using var stream = await _fileCache.GetStreamAsync(nextFilePath);
-                newImageSource = new Bitmap(stream);
-                break;
+                var nextFilePath = _loadedFilePathStack.Pop();
+                this.ImageSource.Value = await _bitmapCache.GetImageAsync(nextFilePath);
+                _currentFilePath = nextFilePath;
+                return;
             }
             catch (Exception)
             {
 
             }
         }
-
-        var oldImageSource = this.ImageSource!.Value;
-        this.ImageSource.Value = newImageSource;
-        oldImageSource?.Dispose();
-
-        _currentFilePath = nextFilePath;
     }
 
     private record class MovedFileHistory

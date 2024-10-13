@@ -1,9 +1,10 @@
 using System.Buffers;
 using System.Collections.Concurrent;
+using Avalonia.Media.Imaging;
 
 namespace ImageClassifier.Internal;
 
-public class FileCache
+public class BitmapCache
 {
     private readonly MemoryPool<byte> _memoryPool = MemoryPool<byte>.Shared;
     private readonly int _maxFileSize;
@@ -14,7 +15,7 @@ public class FileCache
     private readonly NeoSmart.AsyncLock.AsyncLock _asyncLock = new NeoSmart.AsyncLock.AsyncLock();
     private readonly object _lockObject = new();
 
-    public FileCache(int maxFileSize, int maxCachedFileCount)
+    public BitmapCache(int maxFileSize, int maxCachedFileCount)
     {
         _maxFileSize = maxFileSize;
         _maxCachedFileCount = maxCachedFileCount;
@@ -35,15 +36,13 @@ public class FileCache
             using var fileStream = File.Open(filePath, FileMode.Open);
             if (fileStream.Length > _maxFileSize) throw new IOException("too large");
 
-            var memoryOwner = _memoryPool.Rent((int)fileStream.Length);
-            await fileStream.ReadExactlyAsync(memoryOwner.Memory[..(int)fileStream.Length], cancellationToken);
+            var image = new Bitmap(fileStream);
 
             lock (_lockObject)
             {
                 var entry = new Entry
                 {
-                    MemoryOwner = memoryOwner,
-                    Size = (int)fileStream.Length,
+                    Image = image,
                     UpdatedTime = DateTime.Now,
                 };
                 _cacheEntries.TryAdd(filePath, entry);
@@ -52,7 +51,7 @@ public class FileCache
                 {
                     foreach (var oldEntry in _cacheEntries.OrderBy(n => n.Value.UpdatedTime).Take(_cacheEntries.Count - 100))
                     {
-                        oldEntry.Value.MemoryOwner.Dispose();
+                        oldEntry.Value.Image.Dispose();
                         _cacheEntries.TryRemove(oldEntry);
                     }
                 }
@@ -62,7 +61,7 @@ public class FileCache
         }
     }
 
-    public async ValueTask<Stream> GetStreamAsync(string filePath, CancellationToken cancellationToken = default)
+    public async ValueTask<Bitmap> GetImageAsync(string filePath, CancellationToken cancellationToken = default)
     {
         using (await _asyncLock.LockAsync(cancellationToken))
         {
@@ -73,12 +72,7 @@ public class FileCache
                 if (_cacheEntries.TryGetValue(filePath, out var entry))
                 {
                     entry.UpdatedTime = DateTime.Now;
-
-                    var memoryStream = new MemoryStream();
-                    memoryStream.WriteAsync(entry.MemoryOwner.Memory[..entry.Size], cancellationToken);
-                    memoryStream.Seek(0, SeekOrigin.Begin);
-
-                    return memoryStream;
+                    return entry.Image;
                 }
 
                 throw new IOException("Unexpected Error");
@@ -88,8 +82,7 @@ public class FileCache
 
     private record Entry
     {
-        public required IMemoryOwner<byte> MemoryOwner { get; init; }
-        public required int Size { get; init; }
+        public required Bitmap Image { get; init; }
         public required DateTime UpdatedTime { get; set; }
     }
 }
